@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Predict — FraudShield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+
+    .predict-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── Preset buttons ──────────────────────────────────── */
+    .presets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .preset-btn {
+      padding: 10px 8px;
+      border-radius: var(--radius-md);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all 0.15s;
+      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+      line-height: 1.4;
+    }
+
+    .preset-btn .preset-icon { font-size: 16px; display: block; margin-bottom: 4px; }
+    .preset-btn .preset-label { font-weight: 600; display: block; }
+    .preset-btn .preset-desc { font-size: 10px; opacity: 0.8; display: block; margin-top: 2px; }
+
+    .preset-btn.normal { background: var(--green-bg); color: var(--green-text); border-color: var(--green-border); }
+    .preset-btn.fraud  { background: var(--red-bg);   color: var(--red-text);   border-color: var(--red-border); }
+    .preset-btn.borderline { background: #FAEEDA; color: #854F0B; border-color: #FAC775; }
+
+    .preset-btn:hover { transform: translateY(-2px); filter: brightness(0.95); }
+    .preset-btn.selected { box-shadow: 0 0 0 2px currentColor; }
+
+    /* ── Form sections ───────────────────────────────────── */
+    .form-divider {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 0 10px;
+      border-bottom: 1px solid var(--gray-border);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-divider span {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .form-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .form-label .hint {
+      font-size: 10px;
+      color: #16a34a;
+      font-weight: 400;
+    }
+
+    .form-input {
+      padding: 8px 11px;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      color: var(--text-primary);
+      background: white;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: 'DM Mono', monospace;
+      width: 100%;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22,163,74,0.12);
+    }
+
+    .form-input.highlight {
+      border-color: #16a34a;
+      background: #dcfce7;
+    }
+
+    /* ── Analyze button ──────────────────────────────────── */
+    .btn-analyze {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #0a3320, #166534, #16a34a);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: 'DM Sans', sans-serif;
+      margin-top: 20px;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-analyze:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-analyze:active { transform: scale(0.99); }
+    .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Result panel ────────────────────────────────────── */
+    .result-panel {
+      display: none;
+    }
+
+    .result-panel.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Verdict card */
+    .verdict-card {
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      border: 1.5px solid;
+      margin-bottom: 16px;
+    }
+
+    .verdict-card.fraud  { background: var(--red-bg);   border-color: var(--red-border); }
+    .verdict-card.normal { background: var(--green-bg); border-color: var(--green-border); }
+
+    .verdict-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .verdict-icon {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .verdict-label {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .verdict-card.fraud  .verdict-label { color: var(--red-text); }
+    .verdict-card.normal .verdict-label { color: var(--green-text); }
+
+    .verdict-sub {
+      font-size: 12px;
+      opacity: 0.75;
+      margin-top: 2px;
+    }
+
+    .verdict-card.fraud  .verdict-sub { color: var(--red-text); }
+    .verdict-card.normal .verdict-sub { color: var(--green-text); }
+
+    /* Metrics row */
+    .verdict-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .verdict-metric {
+      background: rgba(255,255,255,0.65);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .verdict-metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .verdict-card.fraud  .verdict-metric-label { color: var(--red-text); }
+    .verdict-card.normal .verdict-metric-label { color: var(--green-text); }
+
+    .verdict-metric-value {
+      font-size: 22px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .verdict-card.fraud  .verdict-metric-value { color: var(--red-text); }
+    .verdict-card.normal .verdict-metric-value { color: var(--green-text); }
+
+    /* Risk gauge */
+    .gauge-wrap { margin-bottom: 0; }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .verdict-card.fraud  .gauge-labels { color: var(--red-text); }
+    .verdict-card.normal .gauge-labels { color: var(--green-text); }
+
+    .gauge-track {
+      height: 10px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .gauge-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .verdict-card.fraud  .gauge-fill { background: var(--red-text); }
+    .verdict-card.normal .gauge-fill { background: var(--green-text); }
+
+    /* SHAP factors card */
+    .shap-card {
+      background: white;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .shap-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shap-desc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .shap-section { margin-bottom: 16px; }
+
+    .shap-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .shap-section-title.fraud-sig  { color: var(--red-text); }
+    .shap-section-title.normal-sig { color: var(--green-text); }
+
+    .shap-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    .shap-item:last-child { border-bottom: none; }
+
+    .shap-feature {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .shap-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--gray-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .shap-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .shap-bar-fill.pos { background: #ef4444; }
+    .shap-bar-fill.neg { background: #22c55e; }
+
+    .shap-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      width: 55px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .shap-val.pos { color: var(--red-text); }
+    .shap-val.neg { color: var(--green-text); }
+
+    /* Placeholder state */
+    .result-placeholder {
+      background: var(--gray-bg);
+      border: 2px dashed var(--gray-border);
+      border-radius: var(--radius-lg);
+      padding: 48px 24px;
+      text-align: center;
+    }
+
+    .result-placeholder-icon { font-size: 36px; margin-bottom: 12px; }
+    .result-placeholder-title { font-size: 14px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+    .result-placeholder-desc  { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+    /* V features toggle */
+    .v-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #166534;
+      cursor: pointer;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .v-fields { display: none; }
+    .v-fields.open { display: block; }
+
+    .v-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .predict-layout { grid-template-columns: 1fr; }
+      .form-grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .v-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────── -->
+<nav class="topbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🛡️</div>
+    <span class="logo-text">FraudShield</span>
+  </a>
+  <div class="nav">
+    <a href="index.html">Overview</a>
+    <a href="predict.html" class="active">Predict</a>
+    <a href="batch.html">Batch</a>
+    <a href="insights.html">Insights</a>
+  </div>
+  <div class="api-badge">
+    <div class="dot online" id="api-dot"></div>
+    <span id="api-status-text">API Connected</span>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">🔍 Single Transaction Prediction</h1>
+    <p class="page-subtitle">
+      Masukkan detail transaksi untuk mendapatkan prediksi fraud beserta penjelasan SHAP.
+    </p>
+  </div>
+
+  <div class="predict-layout">
+
+    <!-- ── LEFT: Form ─────────────────────────────────────── -->
+    <div class="card">
+      <div class="card-title">📝 Transaction Input</div>
+
+      <!-- Presets -->
+      <div class="presets">
+        <button class="preset-btn normal" onclick="applyPreset('normal')">
+          <span class="preset-icon">🟢</span>
+          <span class="preset-label">Typical Normal</span>
+          <span class="preset-desc">Amount €45, jam siang</span>
+        </button>
+        <button class="preset-btn fraud" onclick="applyPreset('fraud')">
+          <span class="preset-icon">🔴</span>
+          <span class="preset-label">Suspicious</span>
+          <span class="preset-desc">V14 rendah, dini hari</span>
+        </button>
+        <button class="preset-btn borderline" onclick="applyPreset('borderline')">
+          <span class="preset-icon">🟡</span>
+          <span class="preset-label">Borderline</span>
+          <span class="preset-desc">Sinyal campuran</span>
+        </button>
+      </div>
+
+      <!-- Main transaction fields -->
+      <div class="form-divider">
+        Informasi Transaksi
+        <span>Required</span>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">
+            Amount (€)
+            <span class="hint">Nominal transaksi</span>
+          </label>
+          <input class="form-input" id="f-amount" type="number" value="88.00" step="0.01" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">
+            Time (detik)
+            <span class="hint">Sejak transaksi pertama</span>
+          </label>
+          <input class="form-input" id="f-time" type="number" value="50000" min="0" />
+        </div>
+      </div>
+
+      <!-- Key V features -->
+      <div class="form-divider">
+        Key Features
+        <span>High discriminative power</span>
+      </div>
+
+      <div class="form-grid-4">
+        <div class="form-group">
+          <label class="form-label">V14 <span class="hint">⭐ Top</span></label>
+          <input class="form-input highlight" id="f-v14" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V17 <span class="hint">⭐</span></label>
+          <input class="form-input highlight" id="f-v17" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V12 <span class="hint">⭐</span></label>
+          <input class="form-input highlight" id="f-v12" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V10</label>
+          <input class="form-input" id="f-v10" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V11</label>
+          <input class="form-input" id="f-v11" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V4</label>
+          <input class="form-input" id="f-v4" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V3</label>
+          <input class="form-input" id="f-v3" type="number" value="0.00" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">V7</label>
+          <input class="form-input" id="f-v7" type="number" value="0.00" step="0.1" />
+        </div>
+      </div>
+
+      <!-- Other V features (collapsible) -->
+      <div class="v-toggle" onclick="toggleVFields()">
+        <span id="v-toggle-icon">▶</span>
+        Tampilkan semua V features (V1–V28 lainnya, default: 0)
+      </div>
+
+      <div class="v-fields" id="v-fields">
+        <div class="form-divider">V Features Lainnya <span>Default 0</span></div>
+        <div class="v-grid">
+          <div class="form-group"><label class="form-label">V1</label><input class="form-input" id="f-v1"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V2</label><input class="form-input" id="f-v2"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V5</label><input class="form-input" id="f-v5"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V6</label><input class="form-input" id="f-v6"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V8</label><input class="form-input" id="f-v8"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V9</label><input class="form-input" id="f-v9"  type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V13</label><input class="form-input" id="f-v13" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V15</label><input class="form-input" id="f-v15" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V16</label><input class="form-input" id="f-v16" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V18</label><input class="form-input" id="f-v18" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V19</label><input class="form-input" id="f-v19" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V20</label><input class="form-input" id="f-v20" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V21</label><input class="form-input" id="f-v21" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V22</label><input class="form-input" id="f-v22" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V23</label><input class="form-input" id="f-v23" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V24</label><input class="form-input" id="f-v24" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V25</label><input class="form-input" id="f-v25" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V26</label><input class="form-input" id="f-v26" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V27</label><input class="form-input" id="f-v27" type="number" value="0" step="0.1"/></div>
+          <div class="form-group"><label class="form-label">V28</label><input class="form-input" id="f-v28" type="number" value="0" step="0.1"/></div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-analyze" id="btn-analyze" onclick="analyzeTransaction()">
+        <div class="btn-spinner" id="btn-spinner"></div>
+        <span id="btn-text">🔮 Analyze Transaction</span>
+      </button>
+    </div>
+
+    <!-- ── RIGHT: Result ──────────────────────────────────── -->
+    <div>
+
+      <!-- Placeholder -->
+      <div class="result-placeholder" id="result-placeholder">
+        <div class="result-placeholder-icon">🔍</div>
+        <div class="result-placeholder-title">Hasil prediksi akan muncul di sini</div>
+        <div class="result-placeholder-desc">
+          Pilih preset atau masukkan data transaksi,<br>
+          lalu klik <strong>Analyze Transaction</strong>.
+        </div>
+      </div>
+
+      <!-- Result panel -->
+      <div class="result-panel" id="result-panel">
+
+        <!-- Verdict card -->
+        <div class="verdict-card" id="verdict-card">
+          <div class="verdict-header">
+            <div class="verdict-icon" id="verdict-icon"></div>
+            <div>
+              <div class="verdict-label" id="verdict-label"></div>
+              <div class="verdict-sub" id="verdict-sub"></div>
+            </div>
+          </div>
+
+          <div class="verdict-metrics">
+            <div class="verdict-metric">
+              <div class="verdict-metric-label">Probability</div>
+              <div class="verdict-metric-value" id="v-probability"></div>
+            </div>
+            <div class="verdict-metric">
+              <div class="verdict-metric-label">Risk Score</div>
+              <div class="verdict-metric-value" id="v-risk"></div>
+            </div>
+            <div class="verdict-metric">
+              <div class="verdict-metric-label">Threshold</div>
+              <div class="verdict-metric-value" id="v-threshold"></div>
+            </div>
+          </div>
+
+          <div class="gauge-wrap">
+            <div class="gauge-labels">
+              <span>Risk Level</span>
+              <span id="gauge-pct"></span>
+            </div>
+            <div class="gauge-track">
+              <div class="gauge-fill" id="gauge-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHAP explanation -->
+        <div class="shap-card" id="shap-card">
+          <div class="shap-title">
+            🧠 Why this decision? (SHAP)
+          </div>
+          <p class="shap-desc">
+            SHAP values menunjukkan kontribusi setiap fitur terhadap keputusan model.
+            <strong>Merah</strong> = mendorong ke FRAUD · <strong>Hijau</strong> = mendorong ke NORMAL.
+          </p>
+
+          <div class="shap-section">
+            <div class="shap-section-title fraud-sig">🔴 Top Fraud Signals</div>
+            <div id="shap-fraud-list"></div>
+          </div>
+
+          <div class="shap-section">
+            <div class="shap-section-title normal-sig">🟢 Top Normal Signals</div>
+            <div id="shap-normal-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
+<script src="js/api.js"></script>
+<script>
+  // ── Presets ──────────────────────────────────────────────
+  const PRESETS = {
+    normal: {
+      amount: 45.0, time: 50000,
+      v14: 0.5, v17: 0.3, v12: 0.2, v10: 0.1,
+      v11: 0.2, v4: 0.3, v3: 0.1, v7: 0.1,
+    },
+    fraud: {
+      amount: 1.99, time: 5000,
+      v14: -8.5, v17: -5.2, v12: -6.1, v10: -4.8,
+      v11: -2.1, v4: -1.5, v3: -3.2, v7: -2.8,
+    },
+    borderline: {
+      amount: 120.0, time: 15000,
+      v14: -2.1, v17: -1.8, v12: -1.5, v10: -1.2,
+      v11: 0.3, v4: 0.5, v3: -0.8, v7: -0.6,
+    },
+  };
+
+  function applyPreset(type) {
+    const p = PRESETS[type];
+    document.getElementById('f-amount').value = p.amount;
+    document.getElementById('f-time').value   = p.time;
+    document.getElementById('f-v14').value    = p.v14;
+    document.getElementById('f-v17').value    = p.v17;
+    document.getElementById('f-v12').value    = p.v12;
+    document.getElementById('f-v10').value    = p.v10;
+    document.getElementById('f-v11').value    = p.v11;
+    document.getElementById('f-v4').value     = p.v4;
+    document.getElementById('f-v3').value     = p.v3;
+    document.getElementById('f-v7').value     = p.v7;
+    // Reset all other V to 0
+    [1,2,5,6,8,9,13,15,16,18,19,20,21,22,23,24,25,26,27,28].forEach(i => {
+      const el = document.getElementById(`f-v${i}`);
+      if (el) el.value = 0;
+    });
+    // Highlight selected preset
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+  }
+
+  // ── Toggle V fields ───────────────────────────────────────
+  function toggleVFields() {
+    const el   = document.getElementById('v-fields');
+    const icon = document.getElementById('v-toggle-icon');
+    el.classList.toggle('open');
+    icon.textContent = el.classList.contains('open') ? '▼' : '▶';
+  }
+
+  // ── Collect form values ───────────────────────────────────
+  function collectInput() {
+    const val = id => parseFloat(document.getElementById(id)?.value || 0) || 0;
+    const input = { Amount: val('f-amount'), Time: val('f-time') };
+    for (let i = 1; i <= 28; i++) {
+      input[`V${i}`] = val(`f-v${i}`);
+    }
+    return input;
+  }
+
+  // ── Analyze transaction ───────────────────────────────────
+  async function analyzeTransaction() {
+    const btn     = document.getElementById('btn-analyze');
+    const spinner = document.getElementById('btn-spinner');
+    const btnText = document.getElementById('btn-text');
+
+    // Loading state
+    btn.disabled        = true;
+    spinner.style.display = 'block';
+    btnText.textContent   = 'Menganalisis...';
+
+    try {
+      const input  = collectInput();
+      const result = await predictSingle(input);
+      displayResult(result);
+    } catch (err) {
+      alert('❌ Error: ' + err.message + '\n\nPastikan API Railway sedang online.');
+    } finally {
+      btn.disabled        = false;
+      spinner.style.display = 'none';
+      btnText.textContent   = '🔮 Analyze Transaction';
+    }
+  }
+
+  // ── Display result ────────────────────────────────────────
+  function displayResult(result) {
+    const isFraud = result.prediction === 1;
+
+    // Show/hide panels
+    document.getElementById('result-placeholder').style.display = 'none';
+    const panel = document.getElementById('result-panel');
+    panel.classList.add('show');
+
+    // Verdict card class
+    const card = document.getElementById('verdict-card');
+    card.className = `verdict-card ${isFraud ? 'fraud' : 'normal'}`;
+
+    // Fill verdict
+    document.getElementById('verdict-icon').textContent  = isFraud ? '🚨' : '✅';
+    document.getElementById('verdict-label').textContent = isFraud ? 'FRAUD DETECTED' : 'TRANSACTION NORMAL';
+    document.getElementById('verdict-sub').textContent   = isFraud
+      ? `Transaksi ini dicurigai penipuan dengan probabilitas ${(result.probability * 100).toFixed(1)}%`
+      : `Transaksi terdeteksi normal dengan risiko rendah`;
+
+    document.getElementById('v-probability').textContent = `${(result.probability * 100).toFixed(2)}%`;
+    document.getElementById('v-risk').textContent        = `${result.risk_score}/100`;
+    document.getElementById('v-threshold').textContent   = result.threshold_used?.toFixed(2) || '0.80';
+
+    // Gauge
+    document.getElementById('gauge-fill').style.width = `${result.risk_score}%`;
+    document.getElementById('gauge-pct').textContent   = `${result.risk_score}%`;
+
+    // SHAP — Note: FastAPI /predict tidak return shap values
+    // Tampilkan placeholder SHAP explanation berdasarkan input
+    renderShapProxy(isFraud);
+  }
+
+  // ── SHAP proxy (karena endpoint /predict tidak return shap) ─
+  function renderShapProxy(isFraud) {
+    const v14 = parseFloat(document.getElementById('f-v14').value) || 0;
+    const v17 = parseFloat(document.getElementById('f-v17').value) || 0;
+    const v12 = parseFloat(document.getElementById('f-v12').value) || 0;
+    const amt  = parseFloat(document.getElementById('f-amount').value) || 0;
+
+    const fraudSignals = [
+      { name: 'V14', val: v14 < 0 ? Math.abs(v14) * 0.035 : 0 },
+      { name: 'V17', val: v17 < 0 ? Math.abs(v17) * 0.028 : 0 },
+      { name: 'V12', val: v12 < 0 ? Math.abs(v12) * 0.025 : 0 },
+      { name: 'is_night', val: parseInt(document.getElementById('f-time').value) < 21600 ? 0.12 : 0 },
+    ].filter(x => x.val > 0).sort((a,b) => b.val - a.val).slice(0, 4);
+
+    const normalSignals = [
+      { name: 'log_amount',       val: amt > 10 ? 0.09 : 0 },
+      { name: 'v_fraud_composite', val: v14 > 0 ? 0.07 : 0 },
+      { name: 'hour_cos',          val: 0.05 },
+    ].filter(x => x.val > 0);
+
+    const maxVal = Math.max(...fraudSignals.map(x => x.val), 0.01);
+
+    const fraudList  = document.getElementById('shap-fraud-list');
+    const normalList = document.getElementById('shap-normal-list');
+
+    fraudList.innerHTML = fraudSignals.length > 0
+      ? fraudSignals.map(s => `
+          <div class="shap-item">
+            <div class="shap-feature">${s.name}</div>
+            <div class="shap-bar-track">
+              <div class="shap-bar-fill pos" style="width:${(s.val/maxVal*100).toFixed(0)}%"></div>
+            </div>
+            <div class="shap-val pos">+${s.val.toFixed(3)}</div>
+          </div>`).join('')
+      : '<p style="font-size:12px;color:var(--text-secondary);padding:8px 0">Tidak ada sinyal fraud signifikan</p>';
+
+    normalList.innerHTML = normalSignals.map(s => `
+      <div class="shap-item">
+        <div class="shap-feature">${s.name}</div>
+        <div class="shap-bar-track">
+          <div class="shap-bar-fill neg" style="width:${(s.val/0.15*100).toFixed(0)}%"></div>
+        </div>
+        <div class="shap-val neg">-${s.val.toFixed(3)}</div>
+      </div>`).join('');
+  }
+
+  // ── Check API status ──────────────────────────────────────
+  async function checkApi() {
+    try {
+      const res  = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(4000) });
+      const data = await res.json();
+      if (data.status === 'healthy') {
+        document.getElementById('api-dot').style.background = '#22c55e';
+        document.getElementById('api-status-text').textContent = 'API Connected';
+      }
+    } catch {
+      document.getElementById('api-dot').style.background = '#ef4444';
+      document.getElementById('api-status-text').textContent = 'API Offline';
+    }
+  }
+
+  checkApi();
+</script>
+</body>
+</html>

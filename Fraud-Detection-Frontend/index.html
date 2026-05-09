@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FraudShield — Credit Card Fraud Detection</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Page-specific overrides ─────────────────────────── */
+    body { font-family: 'DM Sans', sans-serif; }
+
+    /* Hero gradient header */
+    .hero {
+      background: linear-gradient(135deg, #0a3320 0%, #166534 50%, #16a34a 100%);
+      padding: 48px 0 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 50%, rgba(22,163,74,0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    }
+
+    .hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      margin-bottom: 18px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero-title {
+      font-size: 36px;
+      font-weight: 600;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      max-width: 560px;
+    }
+
+    .hero-title span {
+      background: linear-gradient(90deg, #86efac, #bbf7d0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.72);
+      max-width: 500px;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-btn {
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .hero-btn.primary {
+      background: white;
+      color: #166534;
+      border: none;
+    }
+
+    .hero-btn.primary:hover {
+      background: #f0fdf4;
+      transform: translateY(-1px);
+    }
+
+    .hero-btn.ghost {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .hero-btn.ghost:hover {
+      background: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+
+    /* Stats floating cards */
+    .hero-stats {
+      display: flex;
+      gap: 14px;
+      margin-top: 36px;
+      flex-wrap: wrap;
+    }
+
+    .hero-stat {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 10px;
+      padding: 12px 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hero-stat-val {
+      font-size: 20px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .hero-stat-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.65);
+      margin-top: 2px;
+    }
+
+    /* ── API status bar ──────────────────────────────────── */
+    .status-bar {
+      background: white;
+      border-bottom: 1px solid var(--gray-border);
+      padding: 10px 0;
+    }
+
+    .status-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #d1d5db;
+    }
+
+    .status-dot.online { background: #22c55e; }
+    .status-dot.checking { background: #f59e0b; animation: pulse-dot 1.5s infinite; }
+
+    .status-label { font-weight: 500; color: var(--text-primary); }
+
+    /* ── Section headings ────────────────────────────────── */
+    .section-heading {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+    }
+
+    /* ── Model comparison bars ───────────────────────────── */
+    .model-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    .model-bar-row:last-child { border-bottom: none; }
+
+    .model-name {
+      width: 140px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+
+    .model-name.best { color: #166534; font-weight: 600; }
+
+    .bar-track {
+      flex: 1;
+      background: var(--gray-bg);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+      border: 1px solid var(--gray-border);
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .model-metrics {
+      display: flex;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .model-metric-item {
+      text-align: center;
+      min-width: 52px;
+    }
+
+    .model-metric-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .model-metric-val.best { color: #166534; }
+
+    .model-metric-key {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    .best-badge {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── Pipeline steps ──────────────────────────────────── */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .pipeline-card {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pipeline-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #166534, #16a34a);
+    }
+
+    .pipeline-num {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #166534, #16a34a);
+      border-radius: 50%;
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .pipeline-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .pipeline-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .pipeline-items li {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      line-height: 1.4;
+    }
+
+    .pipeline-items li::before {
+      content: '→';
+      color: #16a34a;
+      flex-shrink: 0;
+      font-size: 11px;
+      margin-top: 1px;
+    }
+
+    /* ── CTA card ────────────────────────────────────────── */
+    .cta-card {
+      background: linear-gradient(135deg, #0a3320, #166534);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-card::before {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .cta-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .cta-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    /* ── Feature tags ────────────────────────────────────── */
+    .tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .tag {
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* ── Animations ──────────────────────────────────────── */
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card { animation: fadeIn 0.5s ease forwards; }
+    .metric-card:nth-child(1) { animation-delay: 0.05s; }
+    .metric-card:nth-child(2) { animation-delay: 0.1s; }
+    .metric-card:nth-child(3) { animation-delay: 0.15s; }
+    .metric-card:nth-child(4) { animation-delay: 0.2s; }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────── -->
+<nav class="topbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">
+      <img src="assets/FraudShield.svg" alt="Logo" class="svg-icon">
+    </div>
+    <span class="logo-text">FraudShield</span>
+  </a>
+  <div class="nav">
+    <a href="index.html" class="active">Overview</a>
+    <a href="predict.html">Predict</a>
+    <a href="batch.html">Batch</a>
+    <a href="insights.html">Insights</a>
+  </div>
+  <div class="api-badge">
+    <div class="dot" id="api-dot"></div>
+    <span id="api-status-text">Checking API...</span>
+  </div>
+</nav>
+
+<!-- ── Status bar ─────────────────────────────────────────── -->
+<div class="status-bar">
+  <div class="status-inner">
+    <div class="status-item">
+      <div class="status-dot" id="status-dot-api"></div>
+      <span>API Railway:</span>
+      <span class="status-label" id="status-api">Checking...</span>
+    </div>
+    <div class="status-item">
+      <div class="status-dot online"></div>
+      <span>Model:</span>
+      <span class="status-label">LightGBM + SMOTE</span>
+    </div>
+    <div class="status-item">
+      <div class="status-dot online"></div>
+      <span>Threshold:</span>
+      <span class="status-label" id="status-threshold">0.80</span>
+    </div>
+    <div class="status-item">
+      <div class="status-dot online"></div>
+      <span>Dataset:</span>
+      <span class="status-label">ULB Credit Card Fraud (284,807 transaksi)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Hero ───────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <div class="dot"></div>
+      End-to-end ML Pipeline · Portofolio Project
+    </div>
+    <h1 class="hero-title">
+      Real-time Credit Card<br>
+      <span>Fraud Detection</span>
+    </h1>
+    <p class="hero-desc">
+      Sistem deteksi penipuan berbasis Machine Learning menggunakan LightGBM,
+      SHAP Explainability, dan business-aware threshold optimization.
+    </p>
+    <div class="hero-actions">
+      <a href="predict.html" class="hero-btn primary">
+        🔍 Coba Prediksi
+      </a>
+      <a href="batch.html" class="hero-btn ghost">
+        📁 Batch Analysis
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-val">0.883</div>
+        <div class="hero-stat-label">PR-AUC Score</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">37</div>
+        <div class="hero-stat-label">Features (+9 engineered)</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">84.7%</div>
+        <div class="hero-stat-label">Fraud Recall Rate</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-val">1:578</div>
+        <div class="hero-stat-label">Imbalance Ratio</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main content ────────────────────────────────────────── -->
+<div class="page">
+
+  <!-- Metrics -->
+  <div class="section-heading">Model Performance</div>
+  <div class="metrics-grid" style="margin-bottom:28px">
+    <div class="metric-card">
+      <div class="metric-label">PR-AUC</div>
+      <div class="metric-value">0.883</div>
+      <span class="metric-badge blue">Combined model</span>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">ROC-AUC</div>
+      <div class="metric-value">0.981</div>
+      <span class="metric-badge green">Excellent</span>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Recall</div>
+      <div class="metric-value">84.7%</div>
+      <span class="metric-badge blue">Fraud caught</span>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Precision</div>
+      <div class="metric-value">89.3%</div>
+      <span class="metric-badge green">Low false alarm</span>
+    </div>
+  </div>
+
+  <!-- Model comparison + Pipeline -->
+  <div class="two-col" style="margin-bottom:28px">
+
+    <!-- Model comparison -->
+    <div class="card">
+      <div class="card-title">
+        📊 Perbandingan Strategi Imbalanced Handling
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
+        PR-AUC adalah metrik utama — bukan accuracy. Model yang selalu prediksi
+        "normal" sudah 99.83% accurate tapi tidak berguna.
+      </p>
+
+      <div class="model-bar-row">
+        <span class="model-name">LR Baseline</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:84%;background:#bbf7d0" data-width="84%"></div>
+        </div>
+        <div class="model-metrics">
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.744</div>
+            <div class="model-metric-key">PR-AUC</div>
+          </div>
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.958</div>
+            <div class="model-metric-key">ROC-AUC</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="model-bar-row">
+        <span class="model-name">+ Class Weight</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:98%;background:#16a34a"></div>
+        </div>
+        <div class="model-metrics">
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.871</div>
+            <div class="model-metric-key">PR-AUC</div>
+          </div>
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.976</div>
+            <div class="model-metric-key">ROC-AUC</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="model-bar-row">
+        <span class="model-name">+ SMOTE</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:99%;background:#166534"></div>
+        </div>
+        <div class="model-metrics">
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.881</div>
+            <div class="model-metric-key">PR-AUC</div>
+          </div>
+          <div class="model-metric-item">
+            <div class="model-metric-val">0.981</div>
+            <div class="model-metric-key">ROC-AUC</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="model-bar-row">
+        <span class="model-name best">Combined ✅</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:100%;background:linear-gradient(90deg,#0a3320,#16a34a)"></div>
+        </div>
+        <div class="model-metrics">
+          <div class="model-metric-item">
+            <div class="model-metric-val best">0.883</div>
+            <div class="model-metric-key">PR-AUC</div>
+          </div>
+          <div class="model-metric-item">
+            <div class="model-metric-val best">0.981</div>
+            <div class="model-metric-key">ROC-AUC</div>
+          </div>
+        </div>
+        <span class="best-badge">Best</span>
+      </div>
+
+      <div class="tags">
+        <span class="tag">LightGBM</span>
+        <span class="tag">SMOTE sampling_strategy=0.1</span>
+        <span class="tag">Class Weighting</span>
+        <span class="tag">RobustScaler</span>
+        <span class="tag">Threshold=0.80</span>
+      </div>
+    </div>
+
+    <!-- Business impact -->
+    <div class="card">
+      <div class="card-title">
+        💰 Business Impact (Proyeksi Tahunan)
+      </div>
+      <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
+        Berdasarkan asumsi €500 kerugian per fraud & €15 biaya per false alarm.
+        Dataset ≈ 2 hari, di-scale ke 1 tahun (×182.5).
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--green-text);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px">Fraud Dicegah / Tahun</div>
+          <div style="font-size:24px;font-weight:700;color:var(--green-text)">€7.57M+</div>
+          <div style="font-size:11px;color:var(--green-text);opacity:0.8">83 kasus × €500 × 182.5</div>
+        </div>
+
+        <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:var(--red-text);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px">False Alarm Cost / Tahun</div>
+          <div style="font-size:24px;font-weight:700;color:var(--red-text)">€16.4K</div>
+          <div style="font-size:11px;color:var(--red-text);opacity:0.8">6 false alarm × €15 × 182.5</div>
+        </div>
+
+        <div style="background:#dcfce7;border:1px solid #bbf7d0;border-radius:10px;padding:14px">
+          <div style="font-size:11px;color:#166534;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px">Net Benefit / Tahun</div>
+          <div style="font-size:24px;font-weight:700;color:#166534">€7.55M</div>
+          <div style="font-size:11px;color:#166534;opacity:0.8">84.7% fraud recall rate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="section-heading">Metodologi — 6 Fase Pipeline</div>
+  <div class="pipeline-grid" style="margin-bottom:28px">
+    <div class="pipeline-card">
+      <div class="pipeline-num">1</div>
+      <div class="pipeline-title">Data Understanding</div>
+      <ul class="pipeline-items">
+        <li>284,807 transaksi, 0.172% fraud</li>
+        <li>Imbalance ratio 1:578</li>
+        <li>PR-AUC sebagai metrik utama</li>
+      </ul>
+    </div>
+    <div class="pipeline-card">
+      <div class="pipeline-num">2</div>
+      <div class="pipeline-title">Exploratory Data Analysis</div>
+      <ul class="pipeline-items">
+        <li>Cohen's d + KS test untuk feature ranking</li>
+        <li>Fraud peak di jam 00:00–06:00</li>
+        <li>Card testing pattern pada amount kecil</li>
+      </ul>
+    </div>
+    <div class="pipeline-card">
+      <div class="pipeline-num">3</div>
+      <div class="pipeline-title">Feature Engineering</div>
+      <ul class="pipeline-items">
+        <li>+9 fitur baru (log_amount, hour_sin/cos)</li>
+        <li>Cyclic encoding untuk temporal</li>
+        <li>RobustScaler untuk outlier handling</li>
+      </ul>
+    </div>
+    <div class="pipeline-card">
+      <div class="pipeline-num">4</div>
+      <div class="pipeline-title">Modeling</div>
+      <ul class="pipeline-items">
+        <li>3 strategi imbalanced handling dibanding</li>
+        <li>LightGBM + SMOTE + Class Weight</li>
+        <li>Threshold tuning berbasis bisnis</li>
+      </ul>
+    </div>
+    <div class="pipeline-card">
+      <div class="pipeline-num">5</div>
+      <div class="pipeline-title">Explainability</div>
+      <ul class="pipeline-items">
+        <li>SHAP TreeExplainer global importance</li>
+        <li>Waterfall plot per transaksi</li>
+        <li>Business impact simulation</li>
+      </ul>
+    </div>
+    <div class="pipeline-card">
+      <div class="pipeline-num">6</div>
+      <div class="pipeline-title">Deployment</div>
+      <ul class="pipeline-items">
+        <li>FastAPI REST endpoint di Railway</li>
+        <li>HTML dashboard di Netlify</li>
+        <li>Model serialization dengan joblib</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-card">
+    <div>
+      <div class="cta-title">Coba sistem deteksi fraud secara langsung</div>
+      <div class="cta-desc">
+        Masukkan data transaksi dan lihat prediksi model beserta penjelasan SHAP
+        yang menjelaskan mengapa suatu transaksi dicurigai fraud.
+      </div>
+    </div>
+    <div class="cta-actions">
+      <a href="predict.html" class="hero-btn primary" style="font-family:'DM Sans',sans-serif">
+        🔍 Single Predict
+      </a>
+      <a href="batch.html" class="hero-btn ghost" style="font-family:'DM Sans',sans-serif">
+        📁 Batch Upload
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
+<script src="js/api.js"></script>
+<script>
+  // Check API health on load
+  async function checkApiStatus() {
+    const dot    = document.getElementById('api-dot');
+    const text   = document.getElementById('api-status-text');
+    const sdot   = document.getElementById('status-dot-api');
+    const slabel = document.getElementById('status-api');
+
+    try {
+      const res  = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(5000) });
+      const data = await res.json();
+
+      if (data.status === 'healthy') {
+        dot.classList.add('online');
+        dot.style.background = '#22c55e';
+        text.textContent = 'API Connected';
+        sdot.classList.add('online');
+        slabel.textContent = 'Online ✓';
+        if (data.threshold) {
+          document.getElementById('status-threshold').textContent = data.threshold;
+        }
+      }
+    } catch {
+      dot.style.background = '#ef4444';
+      text.textContent = 'API Offline';
+      sdot.style.background = '#ef4444';
+      slabel.textContent = 'Offline';
+    }
+  }
+
+  checkApiStatus();
+</script>
+</body>
+</html>

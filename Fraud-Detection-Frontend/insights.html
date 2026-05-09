@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Model Insights — FraudShield</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+
+    /* ── Tabs ────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid var(--gray-border);
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tab-btn:hover { color: var(--text-primary); }
+
+    .tab-btn.active {
+      color: #166534;
+      border-bottom-color: #166534;
+      font-weight: 600;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Feature importance bars ─────────────────────────── */
+    .feature-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    .feature-row:last-child { border-bottom: none; }
+
+    .feature-rank {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-rank.top3 {
+      background: linear-gradient(135deg, #166534, #16a34a);
+      color: white;
+    }
+
+    .feature-name {
+      width: 140px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
+    .feature-type-tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .feature-type-tag.pca      { background: #dcfce7;  color: #166534; }
+    .feature-type-tag.amount   { background: #f3e8ff; color: #6b21a8; }
+    .feature-type-tag.temporal { background: #fef3c7; color: #92400e; }
+    .feature-type-tag.interact { background: var(--green-bg);  color: var(--green-text); }
+
+    .feature-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--gray-bg);
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid var(--gray-border);
+    }
+
+    .feature-bar-fill {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    .feature-shap-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #166534;
+      width: 48px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .feature-direction {
+      width: 40px;
+      font-size: 11px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .feature-direction.fraud  { color: var(--red-text);   font-weight: 600; }
+    .feature-direction.normal { color: var(--green-text); font-weight: 600; }
+
+    /* ── Threshold analysis ──────────────────────────────── */
+    .threshold-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .threshold-chart {
+      position: relative;
+      height: 220px;
+      margin-top: 16px;
+    }
+
+    .threshold-chart-inner {
+      height: 180px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      border-left: 2px solid var(--gray-border);
+      border-bottom: 2px solid var(--gray-border);
+      padding: 0 4px 4px;
+      position: relative;
+    }
+
+    .thresh-bar-group {
+      display: flex;
+      gap: 2px;
+      align-items: flex-end;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .thresh-bar-group:hover .thresh-bar { opacity: 0.8; }
+
+    .thresh-bar {
+      flex: 1;
+      border-radius: 3px 3px 0 0;
+      transition: height 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.15s;
+      min-width: 6px;
+    }
+
+    .thresh-x-labels {
+      display: flex;
+      gap: 3px;
+      margin-top: 4px;
+      padding-left: 6px;
+    }
+
+    .thresh-x-label {
+      flex: 1;
+      font-size: 9px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .thresh-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .thresh-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .thresh-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    .optimal-marker {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255, 100, 0, 0.6);
+      pointer-events: none;
+    }
+
+    .optimal-label {
+      position: absolute;
+      top: -20px;
+      font-size: 10px;
+      color: #c2410c;
+      font-weight: 600;
+      white-space: nowrap;
+      transform: translateX(-50%);
+    }
+
+    /* ── Metric table ────────────────────────────────────── */
+    .metric-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .metric-table th {
+      text-align: left;
+      padding: 9px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-secondary);
+      border-bottom: 2px solid var(--gray-border);
+    }
+
+    .metric-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--gray-border);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .metric-table tr.best-row td { background: #dcfce7; }
+    .metric-table tr.best-row td:first-child { font-weight: 600; color: #166534; }
+
+    .best-tag {
+      background: #166534;
+      color: white;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* ── Business impact ─────────────────────────────────── */
+    .impact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 24px;
+    }
+
+    .impact-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .impact-input-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    .impact-input-row:last-child { border-bottom: none; }
+
+    .impact-label {
+      font-size: 13px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .impact-sublabel {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .impact-input {
+      width: 110px;
+      padding: 8px 12px;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-family: 'DM Mono', monospace;
+      text-align: right;
+      color: var(--text-primary);
+      background: white;
+    }
+
+    .impact-input:focus {
+      outline: none;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(55,138,221,0.1);
+    }
+
+    .impact-results {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .impact-result-card {
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      border: 1px solid;
+    }
+
+    .impact-result-card.green {
+      background: var(--green-bg);
+      border-color: var(--green-border);
+    }
+
+    .impact-result-card.red {
+      background: var(--red-bg);
+      border-color: var(--red-border);
+    }
+
+    .impact-result-card.blue {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+    }
+
+    .impact-result-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
+    }
+
+    .impact-result-card.green .impact-result-label { color: var(--green-text); }
+    .impact-result-card.red   .impact-result-label { color: var(--red-text); }
+    .impact-result-card.blue  .impact-result-label { color: #166534; }
+
+    .impact-result-value {
+      font-size: 26px;
+      font-weight: 700;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .impact-result-card.green .impact-result-value { color: var(--green-text); }
+    .impact-result-card.red   .impact-result-value { color: var(--red-text); }
+    .impact-result-card.blue  .impact-result-value { color: #166534; }
+
+    .impact-result-sub {
+      font-size: 11px;
+      margin-top: 3px;
+      opacity: 0.75;
+    }
+
+    .impact-result-card.green .impact-result-sub { color: var(--green-text); }
+    .impact-result-card.red   .impact-result-sub { color: var(--red-text); }
+    .impact-result-card.blue  .impact-result-sub { color: #166534; }
+
+    /* ── Key decisions ────────────────────────────────────── */
+    .decision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .decision-card {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .decision-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #166534, #16a34a);
+    }
+
+    .decision-q {
+      font-size: 13px;
+      font-weight: 600;
+      color: #166534;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .decision-a {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      .threshold-grid { grid-template-columns: 1fr; }
+      .impact-layout  { grid-template-columns: 1fr; }
+      .decision-grid  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────── -->
+<nav class="topbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🛡️</div>
+    <span class="logo-text">FraudShield</span>
+  </a>
+  <div class="nav">
+    <a href="index.html">Overview</a>
+    <a href="predict.html">Predict</a>
+    <a href="batch.html">Batch</a>
+    <a href="insights.html" class="active">Insights</a>
+  </div>
+  <div class="api-badge">
+    <div class="dot online" id="api-dot"></div>
+    <span id="api-status-text">API Connected</span>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="page">
+  <div class="page-header">
+    <h1 class="page-title">📊 Model Insights</h1>
+    <p class="page-subtitle">
+      Explainability, threshold analysis, business impact simulation, dan key technical decisions.
+    </p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('shap', this)">🧠 SHAP Explainability</button>
+    <button class="tab-btn" onclick="switchTab('threshold', this)">📉 Threshold Analysis</button>
+    <button class="tab-btn" onclick="switchTab('business', this)">💰 Business Impact</button>
+    <button class="tab-btn" onclick="switchTab('decisions', this)">🔑 Key Decisions</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- TAB 1: SHAP                                           -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-shap">
+
+    <div class="two-col" style="margin-bottom:24px">
+
+      <!-- Global feature importance -->
+      <div class="card">
+        <div class="card-title">🏆 Global Feature Importance (Mean |SHAP|)</div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
+          Seberapa besar rata-rata kontribusi setiap fitur terhadap keputusan model,
+          diukur menggunakan mean absolute SHAP value.
+        </p>
+
+        <div id="feature-importance-list">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- SHAP explanation -->
+      <div class="card">
+        <div class="card-title">📖 Cara Membaca SHAP</div>
+
+        <div style="background:var(--gray-bg);border-radius:var(--radius-md);padding:16px;margin-bottom:16px">
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
+            SHAP Value = Kontribusi fitur ke prediksi
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:60px;height:10px;background:var(--red-text);border-radius:5px;flex-shrink:0"></div>
+              <span style="font-size:12px;color:var(--text-secondary)">
+                <strong style="color:var(--red-text)">Positif</strong> → mendorong prediksi ke arah FRAUD
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:60px;height:10px;background:var(--green-text);border-radius:5px;flex-shrink:0"></div>
+              <span style="font-size:12px;color:var(--text-secondary)">
+                <strong style="color:var(--green-text)">Negatif</strong> → mendorong prediksi ke arah NORMAL
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:12px">
+          Insight per Fitur
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:#dcfce7;border-radius:var(--radius-md);padding:12px">
+            <div style="font-size:12px;font-weight:600;color:#166534;margin-bottom:4px">
+              V14, V17, V12 — Top 3 Most Discriminative
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">
+              Komponen PCA yang merepresentasikan pola transaksi asli.
+              Nilai rendah (negatif) sangat berkorelasi dengan fraud — 
+              menunjukkan profil transaksi yang menyimpang dari normal.
+            </div>
+          </div>
+          <div style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:var(--radius-md);padding:12px">
+            <div style="font-size:12px;font-weight:600;color:#6b21a8;margin-bottom:4px">
+              log_amount — Amount Feature
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">
+              Log transform dari nominal transaksi. Amount kecil (card testing pattern) 
+              mendorong ke fraud; amount normal mendorong ke normal.
+            </div>
+          </div>
+          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:var(--radius-md);padding:12px">
+            <div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:4px">
+              hour_sin, hour_cos — Cyclic Temporal
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">
+              Representasi jam dalam koordinat lingkaran. Transaksi dini hari 
+              memiliki SHAP positif — konsisten dengan temuan EDA.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-md)">
+          <div style="font-size:12px;font-weight:600;color:var(--green-text);margin-bottom:4px">
+            💡 Kenapa SHAP, bukan feature importance bawaan LightGBM?
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">
+            Feature importance (gain/split) hanya menunjukkan frekuensi penggunaan. 
+            SHAP memberikan attribution yang konsisten secara matematis 
+            dan bisa menjelaskan prediksi individual — wajib untuk audit di industri keuangan.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature type breakdown -->
+    <div class="card">
+      <div class="card-title">📦 Feature Type Breakdown</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div style="text-align:center;padding:16px;background:#dcfce7;border-radius:var(--radius-md);border:1px solid #bbf7d0">
+          <div style="font-size:28px;font-weight:700;color:#166534">28</div>
+          <div style="font-size:12px;color:#166534;font-weight:600;margin-top:4px">V Features (PCA)</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">Data asli di-anonymize bank</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:#f3e8ff;border-radius:var(--radius-md);border:1px solid #d8b4fe">
+          <div style="font-size:28px;font-weight:700;color:#6b21a8">4</div>
+          <div style="font-size:12px;color:#6b21a8;font-weight:600;margin-top:4px">Amount Features</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">log, zscore, flag kecil/besar</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:#fef3c7;border-radius:var(--radius-md);border:1px solid #fcd34d">
+          <div style="font-size:28px;font-weight:700;color:#92400e">6</div>
+          <div style="font-size:12px;color:#92400e;font-weight:600;margin-top:4px">Temporal Features</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">hour, cyclic, night, weekend</div>
+        </div>
+        <div style="text-align:center;padding:16px;background:var(--green-bg);border-radius:var(--radius-md);border:1px solid var(--green-border)">
+          <div style="font-size:28px;font-weight:700;color:var(--green-text)">3</div>
+          <div style="font-size:12px;color:var(--green-text);font-weight:600;margin-top:4px">Interaction Features</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:4px">composite score, kombinasi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- TAB 2: THRESHOLD                                      -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-threshold">
+
+    <div class="threshold-grid" style="margin-bottom:24px">
+
+      <!-- Chart -->
+      <div class="card">
+        <div class="card-title">📉 Precision vs Recall Trade-off</div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
+          Menurunkan threshold meningkatkan Recall (lebih banyak fraud tertangkap) 
+          tapi menurunkan Precision (lebih banyak false alarm). 
+          <strong>Threshold optimal = 0.80</strong> berdasarkan F1 maksimum.
+        </p>
+
+        <div class="threshold-chart">
+          <div class="threshold-chart-inner" id="thresh-chart">
+            <!-- Rendered by JS -->
+          </div>
+          <div class="thresh-x-labels" id="thresh-x-labels"></div>
+          <div class="thresh-legend">
+            <div class="thresh-legend-item">
+              <div class="thresh-legend-dot" style="background:#166534"></div> Precision
+            </div>
+            <div class="thresh-legend-item">
+              <div class="thresh-legend-dot" style="background:#ef4444"></div> Recall
+            </div>
+            <div class="thresh-legend-item">
+              <div class="thresh-legend-dot" style="background:#22c55e"></div> F1
+            </div>
+            <div class="thresh-legend-item">
+              <div class="thresh-legend-dot" style="background:rgba(255,100,0,0.4)"></div> Optimal (0.80)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Threshold table -->
+      <div class="card">
+        <div class="card-title">📊 Metrik per Threshold</div>
+        <table class="metric-table">
+          <thead>
+            <tr>
+              <th>Threshold</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1</th>
+            </tr>
+          </thead>
+          <tbody id="threshold-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Threshold explanation -->
+    <div class="card">
+      <div class="card-title">💡 Mengapa Threshold Bukan Keputusan Teknis Semata?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div style="padding:16px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-md)">
+          <div style="font-size:13px;font-weight:600;color:var(--red-text);margin-bottom:8px">
+            ⬇️ Threshold Rendah (misal 0.3)
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+            → Recall tinggi — hampir semua fraud tertangkap<br>
+            → Precision rendah — banyak false alarm<br>
+            → Nasabah sah sering terganggu<br>
+            → Cocok jika biaya fraud sangat tinggi
+          </div>
+        </div>
+        <div style="padding:16px;background:#dcfce7;border:1px solid #bbf7d0;border-radius:var(--radius-md)">
+          <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:8px">
+            ✅ Threshold 0.80 (Optimal)
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+            → Balance antara Precision & Recall<br>
+            → F1 score maksimum<br>
+            → Net benefit tahunan tertinggi<br>
+            → Dipilih berdasarkan simulasi bisnis
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-md)">
+          <div style="font-size:13px;font-weight:600;color:var(--green-text);margin-bottom:8px">
+            ⬆️ Threshold Tinggi (misal 0.95)
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+            → Precision tinggi — sedikit false alarm<br>
+            → Recall rendah — banyak fraud lolos<br>
+            → Kerugian finansial lebih besar<br>
+            → Cocok jika false alarm sangat mahal
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- TAB 3: BUSINESS IMPACT                                -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-business">
+
+    <div class="impact-layout" style="margin-bottom:24px">
+
+      <!-- Inputs -->
+      <div class="card">
+        <div class="card-title">⚙️ Asumsi Bisnis</div>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
+          Ubah asumsi untuk melihat proyeksi net benefit tahunan secara dinamis.
+        </p>
+
+        <div class="impact-input-group">
+          <div class="impact-input-row">
+            <div>
+              <div class="impact-label">Kerugian per fraud</div>
+              <div class="impact-sublabel">Rata-rata kerugian per transaksi fraud yang lolos</div>
+            </div>
+            <input class="impact-input" id="i-fraud-loss" type="number" value="500" min="1" oninput="recalcImpact()" />
+          </div>
+          <div class="impact-input-row">
+            <div>
+              <div class="impact-label">Biaya per false alarm (€)</div>
+              <div class="impact-sublabel">Biaya review manual + customer experience cost</div>
+            </div>
+            <input class="impact-input" id="i-fa-cost" type="number" value="15" min="1" oninput="recalcImpact()" />
+          </div>
+          <div class="impact-input-row">
+            <div>
+              <div class="impact-label">True Positives (TP)</div>
+              <div class="impact-sublabel">Fraud berhasil dideteksi (dari test set)</div>
+            </div>
+            <input class="impact-input" id="i-tp" type="number" value="83" min="0" oninput="recalcImpact()" />
+          </div>
+          <div class="impact-input-row">
+            <div>
+              <div class="impact-label">False Positives (FP)</div>
+              <div class="impact-sublabel">Transaksi sah yang salah diblokir</div>
+            </div>
+            <input class="impact-input" id="i-fp" type="number" value="6" min="0" oninput="recalcImpact()" />
+          </div>
+          <div class="impact-input-row">
+            <div>
+              <div class="impact-label">False Negatives (FN)</div>
+              <div class="impact-sublabel">Fraud yang lolos tidak terdeteksi</div>
+            </div>
+            <input class="impact-input" id="i-fn" type="number" value="15" min="0" oninput="recalcImpact()" />
+          </div>
+          <div class="impact-input-row" style="border:none">
+            <div>
+              <div class="impact-label">Scale factor</div>
+              <div class="impact-sublabel">Dataset ≈ 2 hari → 1 tahun = ×182.5</div>
+            </div>
+            <input class="impact-input" id="i-scale" type="number" value="182.5" min="1" oninput="recalcImpact()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:14px">
+          Proyeksi Tahunan
+        </div>
+        <div class="impact-results">
+          <div class="impact-result-card green">
+            <div class="impact-result-label">Fraud Dicegah / Tahun</div>
+            <div class="impact-result-value" id="r-prevented">€0</div>
+            <div class="impact-result-sub" id="r-prevented-sub">TP × loss × scale</div>
+          </div>
+          <div class="impact-result-card red">
+            <div class="impact-result-label">False Alarm Cost / Tahun</div>
+            <div class="impact-result-value" id="r-fa-cost">€0</div>
+            <div class="impact-result-sub" id="r-fa-sub">FP × fa_cost × scale</div>
+          </div>
+          <div class="impact-result-card red">
+            <div class="impact-result-label">Fraud Lolos (Missed) / Tahun</div>
+            <div class="impact-result-value" id="r-missed">€0</div>
+            <div class="impact-result-sub" id="r-missed-sub">FN × loss × scale</div>
+          </div>
+          <div class="impact-result-card blue">
+            <div class="impact-result-label">Net Benefit / Tahun</div>
+            <div class="impact-result-value" id="r-net">€0</div>
+            <div class="impact-result-sub" id="r-net-sub">prevented − false alarm cost</div>
+          </div>
+          <div class="impact-result-card blue">
+            <div class="impact-result-label">Fraud Recall Rate</div>
+            <div class="impact-result-value" id="r-recall">0%</div>
+            <div class="impact-result-sub">TP / (TP + FN)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Context note -->
+    <div class="card" style="background:var(--gray-bg)">
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+        <strong style="color:var(--text-primary)">Catatan:</strong>
+        Angka di atas menggunakan data dari test set (2 hari transaksi) dan di-scale ke proyeksi tahunan.
+        Asumsi biaya bersifat ilustratif — dalam implementasi nyata, nilai ini harus ditetapkan
+        bersama tim bisnis berdasarkan data historis kerugian aktual.
+        Threshold optimal juga bisa berubah seiring waktu sesuai perubahan cost assumption.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- TAB 4: KEY DECISIONS                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-decisions">
+
+    <div class="decision-grid" style="margin-bottom:24px">
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa LightGBM, bukan XGBoost?</div>
+        <div class="decision-a">
+          LightGBM menggunakan histogram-based algorithm dengan leaf-wise tree growth — 
+          secara konsisten lebih cepat dari XGBoost pada dataset tabular besar. 
+          Mendukung <code>class_weight</code> natively dan punya SHAP compatibility yang baik. 
+          Untuk dataset 284k rows, perbedaan training time-nya signifikan.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa SMOTE dengan sampling_strategy=0.1?</div>
+        <div class="decision-a">
+          Ratio 50/50 antara fraud dan normal terlalu jauh dari distribusi dunia nyata 
+          dan meningkatkan risiko overfitting pada sampel sintetis. 
+          Ratio 10% memberikan signal yang cukup tanpa membuat model "lupa" 
+          bahwa fraud itu langka. SMOTE juga hanya diterapkan pada train set 
+          untuk mencegah data leakage.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa RobustScaler, bukan StandardScaler?</div>
+        <div class="decision-a">
+          StandardScaler sensitif terhadap outlier karena menggunakan mean & std. 
+          Data keuangan sering punya transaksi ekstrem yang akan menarik mean jauh dari pusat distribusi. 
+          RobustScaler menggunakan median & IQR sehingga outlier tidak mendominasi scaling.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa cyclic encoding untuk jam?</div>
+        <div class="decision-a">
+          Model ML memperlakukan angka secara linear. Jam 23 dan jam 0 secara angka berjarak 23, 
+          padahal secara waktu hanya berjarak 1 jam. 
+          Cyclic encoding menggunakan sin & cos untuk merepresentasikan jam sebagai koordinat 
+          lingkaran sehingga jarak geometrisnya benar.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa PR-AUC, bukan ROC-AUC atau Accuracy?</div>
+        <div class="decision-a">
+          Accuracy menyesatkan — model yang selalu prediksi "normal" sudah 99.83% accurate. 
+          ROC-AUC bisa optimistic karena terpengaruh jumlah True Negative yang sangat besar. 
+          PR-AUC lebih informatif untuk imbalanced data karena fokus pada performa di kelas minoritas (fraud).
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa tidak V features di-scale ulang?</div>
+        <div class="decision-a">
+          V1–V28 sudah merupakan hasil PCA yang by definition sudah zero-mean. 
+          Scaling ulang akan mengubah proporsi variance antar komponen 
+          dan merusak makna geometris PCA space. 
+          Hanya fitur Amount dan Time-derived yang perlu di-scale.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Kenapa stratified split, bukan random split?</div>
+        <div class="decision-a">
+          Dengan hanya 492 fraud dari 284k transaksi, random split bisa menaruh 
+          terlalu banyak atau terlalu sedikit fraud di test set secara kebetulan. 
+          Stratified split menjamin proporsi fraud sama persis di train dan test set.
+        </div>
+      </div>
+      <div class="decision-card">
+        <div class="decision-q">❓ Mengapa fraud justru nominal kecil?</div>
+        <div class="decision-a">
+          Ini pola yang dikenal sebagai "card testing" — fraudster menguji apakah kartu masih aktif 
+          dengan transaksi kecil sebelum melakukan transaksi besar. 
+          Tapi distribusi amount fraud juga lebih lebar (std dev lebih tinggi) — 
+          fraudster beroperasi di dua ujung: sangat kecil dan sangat besar.
+        </div>
+      </div>
+    </div>
+
+    <!-- Stack summary -->
+    <div class="card">
+      <div class="card-title">🛠️ Tech Stack</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">ML Pipeline</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Python 3.11</span>
+              Runtime
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">LightGBM</span>
+              Model utama
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">SHAP</span>
+              Explainability
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">imbalanced-learn</span>
+              SMOTE
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">scikit-learn</span>
+              Preprocessing
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">Backend API</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:var(--green-bg);color:var(--green-text);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">FastAPI</span>
+              REST endpoints
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:var(--green-bg);color:var(--green-text);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Uvicorn</span>
+              ASGI server
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:var(--green-bg);color:var(--green-text);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Railway</span>
+              Cloud deploy
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:var(--green-bg);color:var(--green-text);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Docker</span>
+              Containerization
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:var(--green-bg);color:var(--green-text);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">joblib</span>
+              Model serialization
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">Frontend</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">HTML/CSS/JS</span>
+              Pure frontend
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Netlify</span>
+              Static deploy
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">DM Sans</span>
+              Typography
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500">Fetch API</span>
+              HTTP client
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Scripts ─────────────────────────────────────────────── -->
+<script src="js/api.js"></script>
+<script>
+  // ── Tab switching ─────────────────────────────────────────
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Feature importance data ───────────────────────────────
+  const FEATURES = [
+    { name: 'V14',              shap: 0.312, dir: 'fraud',  type: 'pca' },
+    { name: 'V17',              shap: 0.287, dir: 'fraud',  type: 'pca' },
+    { name: 'V12',              shap: 0.241, dir: 'fraud',  type: 'pca' },
+    { name: 'V10',              shap: 0.198, dir: 'fraud',  type: 'pca' },
+    { name: 'V4',               shap: 0.176, dir: 'normal', type: 'pca' },
+    { name: 'V11',              shap: 0.154, dir: 'normal', type: 'pca' },
+    { name: 'log_amount',       shap: 0.098, dir: 'normal', type: 'amount' },
+    { name: 'v_fraud_composite',shap: 0.087, dir: 'fraud',  type: 'interact' },
+    { name: 'hour_sin',         shap: 0.072, dir: 'fraud',  type: 'temporal' },
+    { name: 'hour_cos',         shap: 0.068, dir: 'normal', type: 'temporal' },
+    { name: 'amount_zscore',    shap: 0.054, dir: 'fraud',  type: 'amount' },
+    { name: 'is_night',         shap: 0.043, dir: 'fraud',  type: 'temporal' },
+  ];
+
+  const TYPE_LABEL = { pca: 'PCA', amount: 'Amount', temporal: 'Temporal', interact: 'Interaction' };
+  const BAR_COLORS = {
+    pca:      'linear-gradient(90deg, #166534, #16a34a)',
+    amount:   'linear-gradient(90deg, #7c3aed, #a855f7)',
+    temporal: 'linear-gradient(90deg, #d97706, #f59e0b)',
+    interact: 'linear-gradient(90deg, #15803d, #22c55e)',
+  };
+
+  function renderFeatureImportance() {
+    const maxShap = Math.max(...FEATURES.map(f => f.shap));
+    const list    = document.getElementById('feature-importance-list');
+
+    list.innerHTML = FEATURES.map((f, i) => `
+      <div class="feature-row">
+        <div class="feature-rank ${i < 3 ? 'top3' : ''}">${i + 1}</div>
+        <div class="feature-name">${f.name}</div>
+        <span class="feature-type-tag ${f.type}">${TYPE_LABEL[f.type]}</span>
+        <div class="feature-bar-track">
+          <div class="feature-bar-fill"
+               style="width:${(f.shap / maxShap * 100).toFixed(1)}%;background:${BAR_COLORS[f.type]}">
+          </div>
+        </div>
+        <div class="feature-shap-val">${f.shap.toFixed(3)}</div>
+        <div class="feature-direction ${f.dir}">${f.dir === 'fraud' ? '→ Fraud' : '→ Normal'}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Threshold chart data ──────────────────────────────────
+  const THRESH_DATA = [
+    { t: 0.10, precision: 0.80, recall: 0.88, f1: 0.84 },
+    { t: 0.20, precision: 0.83, recall: 0.87, f1: 0.85 },
+    { t: 0.30, precision: 0.85, recall: 0.86, f1: 0.855 },
+    { t: 0.40, precision: 0.87, recall: 0.86, f1: 0.865 },
+    { t: 0.50, precision: 0.88, recall: 0.86, f1: 0.87 },
+    { t: 0.60, precision: 0.89, recall: 0.85, f1: 0.87 },
+    { t: 0.70, precision: 0.90, recall: 0.85, f1: 0.875 },
+    { t: 0.80, precision: 0.893, recall: 0.847, f1: 0.869 },
+    { t: 0.85, precision: 0.91, recall: 0.82, f1: 0.863 },
+  ];
+
+  function renderThresholdChart() {
+    const chart = document.getElementById('thresh-chart');
+    const labels = document.getElementById('thresh-x-labels');
+    const maxH   = 160;
+
+    // Find optimal index
+    const optIdx = THRESH_DATA.reduce((best, d, i) =>
+      d.f1 > THRESH_DATA[best].f1 ? i : best, 0);
+
+    chart.innerHTML = THRESH_DATA.map((d, i) => {
+      const precH = (d.precision * maxH).toFixed(0);
+      const recH  = (d.recall   * maxH).toFixed(0);
+      const f1H   = (d.f1       * maxH).toFixed(0);
+      return `
+        <div class="thresh-bar-group" title="Threshold ${d.t}">
+          <div class="thresh-bar" style="height:${precH}px;background:#166534;opacity:${i===optIdx?1:0.7}"></div>
+          <div class="thresh-bar" style="height:${recH}px;background:#ef4444;opacity:${i===optIdx?1:0.7}"></div>
+          <div class="thresh-bar" style="height:${f1H}px;background:#22c55e;opacity:${i===optIdx?1:0.7}"></div>
+        </div>
+      `;
+    }).join('');
+
+    // Optimal marker
+    const optLeft = (optIdx / (THRESH_DATA.length - 1) * 100).toFixed(1);
+    chart.innerHTML += `
+      <div class="optimal-marker" style="left:${optLeft}%">
+        <div class="optimal-label">Optimal (0.80)</div>
+      </div>
+    `;
+
+    // X labels
+    labels.innerHTML = THRESH_DATA.map(d =>
+      `<div class="thresh-x-label">${d.t}</div>`
+    ).join('');
+
+    // Table
+    const tbody = document.getElementById('threshold-table-body');
+    tbody.innerHTML = THRESH_DATA.map(d => {
+      const isBest = d.t === 0.80;
+      return `
+        <tr class="${isBest ? 'best-row' : ''}">
+          <td>${d.t} ${isBest ? '<span class="best-tag">Best</span>' : ''}</td>
+          <td>${d.precision.toFixed(3)}</td>
+          <td>${d.recall.toFixed(3)}</td>
+          <td>${d.f1.toFixed(3)}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── Business impact calculator ────────────────────────────
+  function recalcImpact() {
+    const fraudLoss = parseFloat(document.getElementById('i-fraud-loss').value) || 500;
+    const faCost    = parseFloat(document.getElementById('i-fa-cost').value)    || 15;
+    const tp        = parseFloat(document.getElementById('i-tp').value)         || 83;
+    const fp        = parseFloat(document.getElementById('i-fp').value)         || 6;
+    const fn        = parseFloat(document.getElementById('i-fn').value)         || 15;
+    const scale     = parseFloat(document.getElementById('i-scale').value)      || 182.5;
+
+    const prevented = tp * fraudLoss * scale;
+    const faCostAnn = fp * faCost    * scale;
+    const missed    = fn * fraudLoss * scale;
+    const net       = prevented - faCostAnn;
+    const recall    = tp / (tp + fn) * 100;
+
+    const fmt = v => v >= 1e6
+      ? `€${(v/1e6).toFixed(2)}M`
+      : v >= 1000
+        ? `€${(v/1000).toFixed(1)}K`
+        : `€${v.toFixed(0)}`;
+
+    document.getElementById('r-prevented').textContent    = fmt(prevented);
+    document.getElementById('r-fa-cost').textContent      = fmt(faCostAnn);
+    document.getElementById('r-missed').textContent       = fmt(missed);
+    document.getElementById('r-net').textContent          = fmt(net);
+    document.getElementById('r-recall').textContent       = `${recall.toFixed(1)}%`;
+    document.getElementById('r-prevented-sub').textContent = `${tp} × €${fraudLoss} × ${scale}`;
+    document.getElementById('r-fa-sub').textContent        = `${fp} × €${faCost} × ${scale}`;
+    document.getElementById('r-missed-sub').textContent    = `${fn} × €${fraudLoss} × ${scale}`;
+    document.getElementById('r-net-sub').textContent       = `prevented − false alarm cost`;
+  }
+
+  // ── API status ────────────────────────────────────────────
+  async function checkApi() {
+    try {
+      const data = await checkHealth();
+      if (data.status === 'healthy') {
+        document.getElementById('api-dot').style.background = '#22c55e';
+        document.getElementById('api-status-text').textContent = 'API Connected';
+      }
+    } catch {
+      document.getElementById('api-dot').style.background = '#ef4444';
+      document.getElementById('api-status-text').textContent = 'API Offline';
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────
+  renderFeatureImportance();
+  renderThresholdChart();
+  recalcImpact();
+  checkApi();
+</script>
+</body>
+</html>
