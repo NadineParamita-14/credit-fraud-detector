@@ -428,7 +428,9 @@
 <!-- ── Topbar ─────────────────────────────────────────────── -->
 <nav class="topbar">
   <a href="index.html" class="logo">
-    <div class="logo-icon">🛡️</div>
+    <div class="logo-icon">
+      <img src="assets/FraudShield.svg" alt="Logo" class="svg-icon">
+    </div>
     <span class="logo-text">FraudShield</span>
   </a>
   <div class="nav">
@@ -446,7 +448,7 @@
 <!-- ── Main ───────────────────────────────────────────────── -->
 <div class="page">
   <div class="page-header">
-    <h1 class="page-title">📊 Model Insights</h1>
+    <h1 class="page-title">Model Insights</h1>
     <p class="page-subtitle">
       Explainability, threshold analysis, business impact simulation, dan key technical decisions.
     </p>
@@ -454,10 +456,18 @@
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('shap', this)">🧠 SHAP Explainability</button>
-    <button class="tab-btn" onclick="switchTab('threshold', this)">📉 Threshold Analysis</button>
-    <button class="tab-btn" onclick="switchTab('business', this)">💰 Business Impact</button>
-    <button class="tab-btn" onclick="switchTab('decisions', this)">🔑 Key Decisions</button>
+    <button class="tab-btn active" onclick="switchTab('shap', this)">
+      <img src="assets/brain.svg" alt="SHAP" class="tab-icon"> SHAP Explainability
+    </button>
+    <button class="tab-btn" onclick="switchTab('threshold', this)">
+      <img src="assets/strategy.svg" alt="Threshold" class="tab-icon"> Threshold Analysis
+    </button>
+    <button class="tab-btn" onclick="switchTab('business', this)">
+      <img src="assets/business.svg" alt="Business" class="tab-icon"> Business Impact
+    </button>
+    <button class="tab-btn" onclick="switchTab('decisions', this)">
+      <img src="assets/key.svg" alt="Decisions" class="tab-icon"> Key Decisions
+    </button>
   </div>
 
   <!-- ══════════════════════════════════════════════════════ -->
@@ -469,20 +479,24 @@
 
       <!-- Global feature importance -->
       <div class="card">
-        <div class="card-title">🏆 Global Feature Importance (Mean |SHAP|)</div>
+        <div class="card-title">
+          <img src="assets/champion.svg" alt="Trophy" class="title-icon"> 
+          Global Feature Importance (Mean |SHAP|)
+        </div>
         <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
           Seberapa besar rata-rata kontribusi setiap fitur terhadap keputusan model,
           diukur menggunakan mean absolute SHAP value.
         </p>
 
         <div id="feature-importance-list">
-          <!-- Rendered by JS -->
-        </div>
+          </div>
       </div>
 
-      <!-- SHAP explanation -->
       <div class="card">
-        <div class="card-title">📖 Cara Membaca SHAP</div>
+        <div class="card-title">
+          <img src="assets/book.svg" alt="Book" class="title-icon"> 
+          Cara Membaca SHAP
+        </div>
 
         <div style="background:var(--gray-bg);border-radius:var(--radius-md);padding:16px;margin-bottom:16px">
           <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:10px">
@@ -541,7 +555,7 @@
 
         <div style="margin-top:16px;padding:14px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-md)">
           <div style="font-size:12px;font-weight:600;color:var(--green-text);margin-bottom:4px">
-            💡 Kenapa SHAP, bukan feature importance bawaan LightGBM?
+            Kenapa SHAP, bukan feature importance bawaan LightGBM?
           </div>
           <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">
             Feature importance (gain/split) hanya menunjukkan frekuensi penggunaan. 
@@ -554,7 +568,10 @@
 
     <!-- Feature type breakdown -->
     <div class="card">
-      <div class="card-title">📦 Feature Type Breakdown</div>
+      <div class="card-title">
+        <img src="assets/breakdown.svg" alt="Feature Type" class="title-icon">
+        Feature Type Breakdown
+      </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
         <div style="text-align:center;padding:16px;background:#dcfce7;border-radius:var(--radius-md);border:1px solid #bbf7d0">
           <div style="font-size:28px;font-weight:700;color:#166534">28</div>
@@ -589,7 +606,10 @@
 
       <!-- Chart -->
       <div class="card">
-        <div class="card-title">📉 Precision vs Recall Trade-off</div>
+        <div class="card-title">
+          <img src="assets/graph.svg" alt="Chart Down" class="title-icon"> 
+          Precision vs Recall Trade-off
+        </div>
         <p style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">
           Menurunkan threshold meningkatkan Recall (lebih banyak fraud tertangkap) 
           tapi menurunkan Precision (lebih banyak false alarm). 
@@ -620,7 +640,10 @@
 
       <!-- Threshold table -->
       <div class="card">
-        <div class="card-title">📊 Metrik per Threshold</div>
+        <div class="card-title">
+          <img src="assets/strategy.svg" alt="Bar Chart" class="title-icon"> 
+          Metrik per Threshold
+        </div>
         <table class="metric-table">
           <thead>
             <tr>
@@ -637,11 +660,13 @@
 
     <!-- Threshold explanation -->
     <div class="card">
-      <div class="card-title">💡 Mengapa Threshold Bukan Keputusan Teknis Semata?</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+      <div class="card-title">
+        <img src="assets/idea.svg" alt="Insight" class="title-icon"> 
+        Mengapa Threshold Bukan Keputusan Teknis Semata?
+      </div>      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
         <div style="padding:16px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-md)">
           <div style="font-size:13px;font-weight:600;color:var(--red-text);margin-bottom:8px">
-            ⬇️ Threshold Rendah (misal 0.3)
+            Threshold Rendah (misal 0.3)
           </div>
           <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
             → Recall tinggi — hampir semua fraud tertangkap<br>
@@ -652,7 +677,7 @@
         </div>
         <div style="padding:16px;background:#dcfce7;border:1px solid #bbf7d0;border-radius:var(--radius-md)">
           <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:8px">
-            ✅ Threshold 0.80 (Optimal)
+            Threshold 0.80 (Optimal)
           </div>
           <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
             → Balance antara Precision & Recall<br>
@@ -663,7 +688,7 @@
         </div>
         <div style="padding:16px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-md)">
           <div style="font-size:13px;font-weight:600;color:var(--green-text);margin-bottom:8px">
-            ⬆️ Threshold Tinggi (misal 0.95)
+            Threshold Tinggi (misal 0.95)
           </div>
           <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
             → Precision tinggi — sedikit false alarm<br>
@@ -685,7 +710,10 @@
 
       <!-- Inputs -->
       <div class="card">
-        <div class="card-title">⚙️ Asumsi Bisnis</div>
+        <div class="card-title">
+          <img src="assets/workbag.svg" alt="Settings" class="title-icon"> 
+          Asumsi Bisnis
+        </div>
         <p style="font-size:12px;color:var(--text-secondary);margin-bottom:18px">
           Ubah asumsi untuk melihat proyeksi net benefit tahunan secara dinamis.
         </p>
@@ -788,9 +816,11 @@
   <!-- ══════════════════════════════════════════════════════ -->
   <div class="tab-content" id="tab-decisions">
 
-    <div class="decision-grid" style="margin-bottom:24px">
+  <div class="decision-grid" style="margin-bottom:24px">
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa LightGBM, bukan XGBoost?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa LightGBM, bukan XGBoost?
+        </div>
         <div class="decision-a">
           LightGBM menggunakan histogram-based algorithm dengan leaf-wise tree growth — 
           secara konsisten lebih cepat dari XGBoost pada dataset tabular besar. 
@@ -799,7 +829,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa SMOTE dengan sampling_strategy=0.1?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa SMOTE dengan sampling_strategy=0.1?
+        </div>
         <div class="decision-a">
           Ratio 50/50 antara fraud dan normal terlalu jauh dari distribusi dunia nyata 
           dan meningkatkan risiko overfitting pada sampel sintetis. 
@@ -809,7 +841,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa RobustScaler, bukan StandardScaler?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa RobustScaler, bukan StandardScaler?
+        </div>
         <div class="decision-a">
           StandardScaler sensitif terhadap outlier karena menggunakan mean & std. 
           Data keuangan sering punya transaksi ekstrem yang akan menarik mean jauh dari pusat distribusi. 
@@ -817,7 +851,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa cyclic encoding untuk jam?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa cyclic encoding untuk jam?
+        </div>
         <div class="decision-a">
           Model ML memperlakukan angka secara linear. Jam 23 dan jam 0 secara angka berjarak 23, 
           padahal secara waktu hanya berjarak 1 jam. 
@@ -826,7 +862,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa PR-AUC, bukan ROC-AUC atau Accuracy?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa PR-AUC, bukan ROC-AUC atau Accuracy?
+        </div>
         <div class="decision-a">
           Accuracy menyesatkan — model yang selalu prediksi "normal" sudah 99.83% accurate. 
           ROC-AUC bisa optimistic karena terpengaruh jumlah True Negative yang sangat besar. 
@@ -834,7 +872,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa tidak V features di-scale ulang?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa tidak V features di-scale ulang?
+        </div>
         <div class="decision-a">
           V1–V28 sudah merupakan hasil PCA yang by definition sudah zero-mean. 
           Scaling ulang akan mengubah proporsi variance antar komponen 
@@ -843,7 +883,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Kenapa stratified split, bukan random split?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Kenapa stratified split, bukan random split?
+        </div>
         <div class="decision-a">
           Dengan hanya 492 fraud dari 284k transaksi, random split bisa menaruh 
           terlalu banyak atau terlalu sedikit fraud di test set secara kebetulan. 
@@ -851,7 +893,9 @@
         </div>
       </div>
       <div class="decision-card">
-        <div class="decision-q">❓ Mengapa fraud justru nominal kecil?</div>
+        <div class="decision-q">
+          <img src="assets/question.svg" alt="Q" class="q-icon"> Mengapa fraud justru nominal kecil?
+        </div>
         <div class="decision-a">
           Ini pola yang dikenal sebagai "card testing" — fraudster menguji apakah kartu masih aktif 
           dengan transaksi kecil sebelum melakukan transaksi besar. 
@@ -863,8 +907,10 @@
 
     <!-- Stack summary -->
     <div class="card">
-      <div class="card-title">🛠️ Tech Stack</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card-title">
+        <img src="assets/techstack.svg" alt="Tech Stack" class="title-icon"> 
+        Tech Stack
+      </div>      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
         <div>
           <div style="font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">ML Pipeline</div>
           <div style="display:flex;flex-direction:column;gap:6px">

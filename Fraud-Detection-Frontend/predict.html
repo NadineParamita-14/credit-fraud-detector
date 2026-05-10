@@ -417,7 +417,9 @@
 <!-- ── Topbar ─────────────────────────────────────────────── -->
 <nav class="topbar">
   <a href="index.html" class="logo">
-    <div class="logo-icon">🛡️</div>
+    <div class="logo-icon">
+      <img src="assets/FraudShield.svg" alt="Logo" class="svg-icon">
+    </div>
     <span class="logo-text">FraudShield</span>
   </a>
   <div class="nav">
@@ -435,7 +437,7 @@
 <!-- ── Main ───────────────────────────────────────────────── -->
 <div class="page">
   <div class="page-header">
-    <h1 class="page-title">🔍 Single Transaction Prediction</h1>
+    <h1 class="page-title">Single Transaction Prediction</h1>
     <p class="page-subtitle">
       Masukkan detail transaksi untuk mendapatkan prediksi fraud beserta penjelasan SHAP.
     </p>
@@ -445,7 +447,7 @@
 
     <!-- ── LEFT: Form ─────────────────────────────────────── -->
     <div class="card">
-      <div class="card-title">📝 Transaction Input</div>
+      <div class="card-title">Transaction Input</div>
 
       <!-- Presets -->
       <div class="presets">
@@ -565,7 +567,7 @@
       <!-- Submit -->
       <button class="btn-analyze" id="btn-analyze" onclick="analyzeTransaction()">
         <div class="btn-spinner" id="btn-spinner"></div>
-        <span id="btn-text">🔮 Analyze Transaction</span>
+        <span id="btn-text">Analyze Transaction</span>
       </button>
     </div>
 
@@ -573,14 +575,14 @@
     <div>
 
       <!-- Placeholder -->
-      <div class="result-placeholder" id="result-placeholder">
-        <div class="result-placeholder-icon">🔍</div>
-        <div class="result-placeholder-title">Hasil prediksi akan muncul di sini</div>
-        <div class="result-placeholder-desc">
-          Pilih preset atau masukkan data transaksi,<br>
-          lalu klik <strong>Analyze Transaction</strong>.
-        </div>
+    <div class="result-placeholder" id="result-placeholder">
+      <img src="assets/searchgreen.svg" alt="Search" class="placeholder-svg">
+      <div class="result-placeholder-title">Hasil prediksi akan muncul di sini</div>
+      <div class="result-placeholder-desc">
+        Pilih preset atau masukkan data transaksi,<br>
+        lalu klik <strong>Analyze Transaction</strong>.
       </div>
+    </div>
 
       <!-- Result panel -->
       <div class="result-panel" id="result-panel">
@@ -624,7 +626,7 @@
         <!-- SHAP explanation -->
         <div class="shap-card" id="shap-card">
           <div class="shap-title">
-            🧠 Why this decision? (SHAP)
+            Why this decision? (SHAP)
           </div>
           <p class="shap-desc">
             SHAP values menunjukkan kontribusi setiap fitur terhadap keputusan model.
@@ -729,7 +731,7 @@
     } finally {
       btn.disabled        = false;
       spinner.style.display = 'none';
-      btnText.textContent   = '🔮 Analyze Transaction';
+      btnText.textContent   = 'Analyze Transaction';
     }
   }
 
@@ -747,8 +749,10 @@
     card.className = `verdict-card ${isFraud ? 'fraud' : 'normal'}`;
 
     // Fill verdict
-    document.getElementById('verdict-icon').textContent  = isFraud ? '🚨' : '✅';
-    document.getElementById('verdict-label').textContent = isFraud ? 'FRAUD DETECTED' : 'TRANSACTION NORMAL';
+    document.getElementById('verdict-icon').innerHTML = isFraud 
+      ? '<img src="assets/warning.svg" alt="Fraud" class="verdict-svg">' 
+      : '<img src="assets/checklist.svg" alt="Normal" class="verdict-svg">';
+          document.getElementById('verdict-label').textContent = isFraud ? 'FRAUD DETECTED' : 'TRANSACTION NORMAL';
     document.getElementById('verdict-sub').textContent   = isFraud
       ? `Transaksi ini dicurigai penipuan dengan probabilitas ${(result.probability * 100).toFixed(1)}%`
       : `Transaksi terdeteksi normal dengan risiko rendah`;
