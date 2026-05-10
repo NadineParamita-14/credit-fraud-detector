@@ -381,7 +381,7 @@
     .filter-btn.normal-filter.active { background: var(--green-text); border-color: var(--green-text); }
 
     .search-input {
-      padding: 7px 12px;
+      padding: 7px 12px 7px 32px;
       border: 1px solid var(--gray-border);
       border-radius: var(--radius-md);
       font-size: 13px;
@@ -557,7 +557,9 @@
 <!-- ── Topbar ─────────────────────────────────────────────── -->
 <nav class="topbar">
   <a href="index.html" class="logo">
-    <div class="logo-icon">🛡️</div>
+    <div class="logo-icon">
+      <img src="assets/FraudShield.svg" alt="Logo" class="svg-icon">
+    </div>
     <span class="logo-text">FraudShield</span>
   </a>
   <div class="nav">
@@ -575,7 +577,7 @@
 <!-- ── Main ───────────────────────────────────────────────── -->
 <div class="page">
   <div class="page-header">
-    <h1 class="page-title">📁 Batch Transaction Analysis</h1>
+    <h1 class="page-title">Batch Transaction Analysis</h1>
     <p class="page-subtitle">
       Upload CSV berisi banyak transaksi untuk dianalisis sekaligus. Hasil dapat diunduh sebagai CSV.
     </p>
@@ -583,30 +585,39 @@
 
   <!-- Upload section -->
   <div class="card" style="margin-bottom:24px">
-    <div class="card-title">📤 Upload Data Transaksi</div>
+    <div class="card-title">Upload Data Transaksi</div>
 
     <!-- Drop zone -->
     <div class="upload-zone" id="upload-zone"
-         ondragover="handleDragOver(event)"
-         ondragleave="handleDragLeave(event)"
-         ondrop="handleDrop(event)">
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleDrop(event)">
       <input type="file" id="file-input" accept=".csv" onchange="handleFileSelect(event)" />
-      <div class="upload-icon">📂</div>
+      
+      <img src="assets/filegreen.svg" alt="Upload File" class="upload-svg">
+      
       <div class="upload-title">Drag & drop file CSV di sini</div>
       <div class="upload-desc">
         atau klik untuk browse file dari komputer kamu.<br>
         File harus mengandung kolom <strong>V1–V28</strong>, <strong>Amount</strong>, dan <strong>Time</strong>.
       </div>
       <div class="upload-meta">
-        <div class="upload-meta-item">📄 Format: CSV</div>
-        <div class="upload-meta-item">📦 Max: 50MB</div>
-        <div class="upload-meta-item">🔢 Kolom: V1-V28, Amount, Time</div>
+        <div class="upload-meta-item">
+          <img src="assets/format.svg" alt="File" class="meta-icon"> Format: CSV
+        </div>
+        <div class="upload-meta-item">
+          <img src="assets/filesize.svg" alt="Size" class="meta-icon"> Max: 50MB
+        </div>
+        <div class="upload-meta-item">
+          <img src="assets/column.svg" alt="Columns" class="meta-icon"> Kolom: V1-V28, Amount, Time
+        </div>
       </div>
     </div>
 
     <!-- File info -->
     <div class="file-info" id="file-info">
-      <span>📄</span>
+      <img src="assets/filegreen.svg" alt="File" class="file-icon">
+      
       <span class="file-info-name" id="file-name">—</span>
       <span class="file-info-size" id="file-size">—</span>
       <button onclick="clearFile()" style="background:none;border:none;cursor:pointer;color:var(--red-text);font-size:16px;padding:0 4px">✕</button>
@@ -617,7 +628,7 @@
 
     <!-- Sample data button -->
     <button class="btn-sample" onclick="loadSampleData()">
-      📊 Gunakan Sample Data (100 transaksi simulasi)
+      Gunakan Sample Data (100 transaksi simulasi)
     </button>
 
     <!-- Progress bar -->
@@ -628,7 +639,7 @@
     <!-- Analyze button -->
     <button class="btn-analyze" id="btn-analyze" onclick="runBatchAnalysis()" disabled>
       <div class="btn-spinner" id="btn-spinner"></div>
-      <span id="btn-text">📊 Analyze Batch</span>
+      <span id="btn-text">Analyze Batch</span>
     </button>
   </div>
 
@@ -640,55 +651,73 @@
 
     <!-- Charts -->
     <div class="chart-row">
-      <div class="card">
-        <div class="card-title">📈 Fraud Probability per Transaksi</div>
-        <div class="mini-chart" id="prob-chart"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🍩 Distribusi Prediksi</div>
-        <div class="donut-wrap">
-          <div class="donut-container">
-            <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160">
-              <circle cx="80" cy="80" r="60" fill="none" stroke="#EAF3DE" stroke-width="24"/>
-              <circle cx="80" cy="80" r="60" fill="none" stroke="#FCEBEB" stroke-width="24"
-                      id="donut-fraud-arc"
-                      stroke-dasharray="0 377"
-                      stroke-dashoffset="0"
-                      style="transition: stroke-dasharray 1s ease"/>
-            </svg>
-            <div class="donut-center">
-              <div class="donut-pct" id="donut-pct">0%</div>
-              <div class="donut-sub">fraud rate</div>
+          <div class="card">
+            <div class="card-title">
+              <img src="assets/strategy.svg" alt="Chart" class="title-icon">
+              Fraud Probability per Transaksi
             </div>
+            <div class="mini-chart" id="prob-chart"></div>
           </div>
-          <div class="donut-legend">
-            <div class="legend-item">
-              <div class="legend-dot" style="background:#FCEBEB;border:2px solid var(--red-border)"></div>
-              <span class="legend-label">Fraud</span>
-              <span class="legend-val fraud-color" id="legend-fraud">0</span>
+          
+          <div class="card">
+            <div class="card-title">
+              <img src="assets/distribution.svg" alt="Donut" class="title-icon">
+              Distribusi Prediksi
             </div>
-            <div class="legend-item">
-              <div class="legend-dot" style="background:#EAF3DE;border:2px solid var(--green-border)"></div>
-              <span class="legend-label">Normal</span>
-              <span class="legend-val normal-color" id="legend-normal">0</span>
+            <div class="donut-wrap">
+              <div class="donut-container">
+                <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160">
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#EAF3DE" stroke-width="24"/>
+                  <circle cx="80" cy="80" r="60" fill="none" stroke="#FCEBEB" stroke-width="24"
+                          id="donut-fraud-arc"
+                          stroke-dasharray="0 377"
+                          stroke-dashoffset="0"
+                          style="transition: stroke-dasharray 1s ease"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-pct" id="donut-pct">0%</div>
+                  <div class="donut-sub">fraud rate</div>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:#FCEBEB;border:2px solid var(--red-border)"></div>
+                  <span class="legend-label">Fraud</span>
+                  <span class="legend-val fraud-color" id="legend-fraud">0</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:#EAF3DE;border:2px solid var(--green-border)"></div>
+                  <span class="legend-label">Normal</span>
+                  <span class="legend-val normal-color" id="legend-normal">0</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
     <!-- Results table -->
     <div class="card">
-      <div class="card-title">📋 Hasil Prediksi Detail</div>
+          <div class="card-title">
+            <img src="assets/result.svg" alt="List" class="title-icon">
+            Hasil Prediksi Detail
+          </div>
 
-      <div class="table-controls">
-        <div class="filter-group">
-          <button class="filter-btn active" onclick="setFilter('all', this)">Semua</button>
-          <button class="filter-btn fraud-filter" onclick="setFilter('fraud', this)">🚨 Fraud</button>
-          <button class="filter-btn normal-filter" onclick="setFilter('normal', this)">✅ Normal</button>
-        </div>
+          <div class="table-controls">
+            <div class="filter-group">
+              <button class="filter-btn active" onclick="setFilter('all', this)">Semua</button>
+              <button class="filter-btn fraud-filter" onclick="setFilter('fraud', this)">
+                <img src="assets/warning.svg" alt="Fraud" class="filter-icon"> Fraud
+              </button>
+              <button class="filter-btn normal-filter" onclick="setFilter('normal', this)">
+                <img src="assets/checklist.svg" alt="Normal" class="filter-icon"> Normal
+              </button>
+            </div>
         <span id="table-count" style="font-size:12px;color:var(--text-secondary)"></span>
-        <input type="text" class="search-input" placeholder="🔍 Cari berdasarkan index..." oninput="searchTable(this.value)" />
+
+        <div class="search-wrapper">
+          <img src="assets/searchgreen.svg" alt="Search" class="search-icon">
+          <input type="text" class="search-input" placeholder="Cari dari index..." oninput="searchTable(this.value)" />
+        </div>
       </div>
 
       <div style="overflow-x:auto">
@@ -713,7 +742,7 @@
       <div class="download-bar">
         <span class="download-info" id="download-info"></span>
         <button class="btn-download" onclick="downloadCSV()">
-          ⬇️ Download Hasil CSV
+          ⬇ Download Hasil CSV
         </button>
       </div>
     </div>
@@ -722,7 +751,7 @@
 
   <!-- Empty state (before upload) -->
   <div class="empty-state" id="empty-state">
-    <div class="empty-icon">📂</div>
+    <img src="assets/filegreen.svg" alt="Empty Data" class="empty-svg">
     <div class="empty-title">Belum ada data untuk dianalisis</div>
     <div class="empty-desc">
       Upload file CSV atau gunakan sample data<br>
@@ -842,7 +871,7 @@
     } finally {
       btn.disabled          = false;
       spinner.style.display = 'none';
-      btnText.textContent   = '📊 Analyze Batch';
+      btnText.textContent   = 'Analyze Batch';
       progress.style.display = 'none';
     }
   }
