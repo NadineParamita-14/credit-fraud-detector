@@ -18,7 +18,7 @@ app = FastAPI(
 # ── CORS — izinkan request dari Netlify ────────────────
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = ["https://creditfrauddetector.netlify.app/"],   
+    allow_origins     = ["https://creditfrauddetector.netlify.app"],   
     allow_credentials = True,
     allow_methods     = ["*"],
     allow_headers     = ["*"],
