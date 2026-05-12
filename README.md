@@ -8,7 +8,7 @@
 ![Explainability](https://img.shields.io/badge/Explainability-SHAP-orange)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
-**🌐 Live Demo:** [Dashboard](https://creditfrauddetector.netlify.app/) &nbsp;|&nbsp; **📡 API Docs:** [Swagger UI](https://web-production-e88050.up.railway.app/docs)
+**🌐 Live Demo:** [Dashboard FraudShield](https://creditfrauddetector.netlify.app/) &nbsp;|&nbsp; **📡 API Docs:** [Swagger UI](https://web-production-e88050.up.railway.app/docs)
 
 ---
 
@@ -201,9 +201,9 @@ Threshold dioptimasi ke **0.80** berdasarkan F1 maksimum dan simulasi net benefi
 
 ### Apa Itu V1–V28?
 
-Kalau kamu membuka form input di dashboard dan melihat V1, V2, V3 hingga V28 — wajar kalau bertanya-tanya itu apa. Jawabannya: **kita memang tidak tahu persis artinya, dan itu disengaja.**
+Kalau kamu membuka form input di dashboard dan melihat V1, V2, V3 hingga V28, wajar kalau bertanya-tanya itu apa. Jawabannya: **kita memang tidak tahu persis artinya, dan itu disengaja.**
 
-Dataset ini berasal dari transaksi kartu kredit nyata milik bank di Eropa. Bank tersebut tidak bisa membagikan data asli nasabah karena alasan privasi — jadi mereka menggunakan teknik matematika bernama **PCA (Principal Component Analysis)** untuk mengubah seluruh informasi transaksi menjadi angka-angka anonim.
+Dataset ini berasal dari transaksi kartu kredit nyata milik bank di Eropa. Bank tersebut tidak bisa membagikan data asli nasabah karena alasan privasi, = jadi mereka menggunakan teknik matematika bernama **PCA (Principal Component Analysis)** untuk mengubah seluruh informasi transaksi menjadi angka-angka anonim.
 
 **Bayangkan seperti ini:**
 
@@ -218,7 +218,7 @@ Negara asal kartu                     ...
 Riwayat belanja nasabah               V28 = -0.0211
 ```
 
-Hasilnya adalah angka-angka abstrak yang **tidak bisa dikembalikan** ke data aslinya — privasi nasabah terlindungi, tapi pola fraud tetap bisa dipelajari oleh model.
+Hasilnya adalah angka-angka abstrak yang **tidak bisa dikembalikan** ke data aslinya, privasi nasabah terlindungi, tapi pola fraud tetap bisa dipelajari oleh model.
 
 ---
 
@@ -268,7 +268,7 @@ Ambil sebagian baris dari file tersebut, simpan sebagai CSV baru, upload ke dash
 
 Data bank asli biasanya punya kolom seperti: tanggal, jam, merchant, nominal, negara, dll. Untuk bisa dipakai di sistem ini, data tersebut perlu melalui proses PCA yang sama seperti yang dilakukan pada dataset training.
 
-Ini membutuhkan preprocessing tambahan yang tidak tercakup dalam project ini — karena setiap bank punya format data yang berbeda. Untuk tujuan demo dan portofolio, gunakan Skenario 1 atau Skenario 3.
+Ini membutuhkan preprocessing tambahan yang tidak tercakup dalam project ini karena setiap bank punya format data yang berbeda. Untuk tujuan demo dan portofolio, gunakan Skenario 1 atau Skenario 3.
 
 ---
 
